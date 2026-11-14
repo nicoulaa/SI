@@ -2,3 +2,17 @@ _site/
 __pycache__/
 .DS_Store
 **/.DS_Store
+
+# Métadonnées de Windows Explorer
+Thumbs.db
+**/Thumbs.db
+ehthumbs.db
+**/ehthumbs.db
+desktop.ini
+Desktop.ini
+**/desktop.ini
+**/Desktop.ini
+
+# Fichiers AppleDouble créés lors de copies depuis macOS
+._*
+**/._*

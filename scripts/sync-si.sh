@@ -32,7 +32,9 @@ while IFS= read -r -d '' path; do
 done < <(git diff HEAD --name-only -z)
 
 # Retirer les métadonnées Finder déjà présentes et ignorer les futures.
-find . -path './.git' -prune -o -type f -name '.DS_Store' -delete
+find . -path './.git' -prune -o -type f \
+  \( -name '.DS_Store' -o -name 'Thumbs.db' -o -name 'ehthumbs.db' \
+     -o -iname 'desktop.ini' -o -name '._*' \) -delete
 
 # Vérifier l'accès distant avant de créer un commit local.
 echo "Récupération du dépôt distant…"
