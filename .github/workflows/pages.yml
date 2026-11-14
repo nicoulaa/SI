@@ -1,6 +1,8 @@
 name: Publier la visionneuse
 on:
-  push:
+  workflow_run:
+    workflows: ["Synchronisation des overlays et de la visionneuse"]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 permissions:
@@ -12,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   deploy:
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

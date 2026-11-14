@@ -59,3 +59,5 @@ Le dossier `_site` contient le site complet et est ignoré par Git. Le fonctionn
 Copiez `scripts/sync-si.sh` dans le dossier parent `wplace/`, puis lancez `bash sync-si.sh`. Vous pouvez aussi le lancer directement avec `bash scripts/sync-si.sh` depuis SI. Un message de commit personnalisé peut être passé en premier argument.
 
 Le script récupère le dépôt distant, enregistre les ajouts, modifications **et suppressions** dans `Overlays/`, `Visionneuse/`, `scripts/`, le workflow Pages et `.gitignore`, puis réapplique les commits locaux sur `origin/main` et envoie le résultat. Il refuse de travailler sur une autre branche, pendant une opération Git en cours ou en présence de modifications suivies hors de ce périmètre. En cas de conflit, il s’arrête sans forcer l’envoi. L’authentification utilise votre configuration Git habituelle ; aucun token n’est écrit dans le script.
+
+Chaque vignette et la vue détaillée proposent aussi **Télécharger .wplace**. En mode en ligne, le navigateur télécharge le fichier original depuis `Overlays/`; en mode local, il télécharge le fichier sélectionné depuis l’ordinateur. Les fichiers restent au format `.wplace`.

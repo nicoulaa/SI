@@ -2,6 +2,7 @@
 const $ = id => document.getElementById(id);
 let items=[],shown=[],folder='',selected=null,scale=1,x=0,y=0,loadVersion=0,imageVersion=0,drag=null,background=0;
 const stage=$('stage'),image=$('fullImage'),viewer=$('viewer');
+let detailWplaceUrl=null;
 // Some exporters write literal \n separators outside JSON strings.
 function parseWplace(text){
  text=text.replace(/^\uFEFF/,'');
@@ -78,9 +79,9 @@ function renderGrid(){
  if(!shown.includes(selected))selected=shown[0]||null;
  $('folderTitle').textContent=folder||'Tous les overlays';$('count').textContent=shown.length+' image(s) · '+items.length+' fichier(s) chargé(s)';
  const grid=$('grid');grid.replaceChildren();
- for(const item of shown){const card=el('button',undefined,'card');card.title=item.name+'\n'+item.path;const thumb=el('div',undefined,'thumb'),im=el('img');im.src=item.src;im.alt=item.name;im.loading='lazy';im.onerror=()=>{thumb.replaceChildren(el('span','Image illisible'));};thumb.append(im);
-  const caption=el('div',undefined,'caption');const subdir=relativeDir(item,base);const title=el('strong',(subdir?'▣ '+subdir+' / ':'')+item.file.name);title.title=item.file.name;const location=el('small',subdir?'Sous-dossier : '+subdir:'Dossier courant');location.title=item.path;caption.append(title,location);card.append(thumb,caption);
-  card.onclick=()=>select(item);card.ondblclick=()=>openImage(item);card.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();openImage(item);}};
+ for(const item of shown){const card=el('article',undefined,'card');card.title=item.name+'\n'+item.path;card.tabIndex=0;card.setAttribute('role','button');const thumb=el('div',undefined,'thumb'),im=el('img');im.src=item.src;im.alt=item.name;im.loading='lazy';im.onerror=()=>{thumb.replaceChildren(el('span','Image illisible'));};thumb.append(im);
+  const caption=el('div',undefined,'caption');const subdir=relativeDir(item,base);const title=el('strong',(subdir?'▣ '+subdir+' / ':'')+item.file.name);title.title=item.file.name;const location=el('small',subdir?'Sous-dossier : '+subdir:'Dossier courant');location.title=item.path;caption.append(title,location);const actions=el('div',undefined,'card-actions');const open=el('button','Visionner');open.type='button';open.onclick=()=>openImage(item);const save=el('button','Télécharger .wplace');save.type='button';save.onclick=()=>downloadWplace(item);actions.append(open,save);card.append(thumb,caption,actions);
+  card.onclick=e=>{if(e.target===card||e.target===thumb||e.target===im||e.target===caption||e.target===title||e.target===location)select(item);};card.ondblclick=e=>{if(!e.target.closest('button'))openImage(item);};card.onkeydown=e=>{if(e.target===card&&e.key==='Enter'){e.preventDefault();openImage(item);}else if(e.target===card&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();move(e.key==='ArrowLeft'||e.key==='ArrowUp'?-1:1);}};
   grid.append(card);
  }
  markSelection();$('empty').hidden=shown.length>0;
@@ -99,6 +100,7 @@ function metadata(item){
  for(const [key,value]of Object.entries(item.data))row(key,key==='image'?cleaned(value):value);
  $('raw').textContent=JSON.stringify(cleaned(item.data),null,2);
  $('download').href=item.src;$('download').download=item.file.name.replace(/\.wplace$/i,'')+'.'+(/^data:image\/jpeg/i.test(item.src)?'jpg':item.src.slice(11,item.src.indexOf(';')));
+ setWplaceDownload(item);
 }
 function openImage(item){
  select(item);const version=++imageVersion;image.hidden=true;
@@ -174,7 +176,7 @@ async function loadOnline(){
     if(!response.ok)throw new Error('HTTP '+response.status);
     const text=await response.text(),data=parseWplace(text),src=imageSource(data),path=entry.path;
     const date=value=>typeof value==='number'&&Number.isFinite(value)?value:null;
-    loaded.push({path,dir:path.slice(0,path.lastIndexOf('/')),name:String(data.name||path.split('/').pop()),data,src,online:true,created:date(entry.created),file:{name:path.split('/').pop(),size:new Blob([text]).size,lastModified:date(entry.modified)}});
+    loaded.push({path,dir:path.slice(0,path.lastIndexOf('/')),name:String(data.name||path.split('/').pop()),data,src,online:true,url:catalogueURL(entry.path),created:date(entry.created),file:{name:path.split('/').pop(),size:new Blob([text]).size,lastModified:date(entry.modified)}});
    }catch(error){errors.push(String(entry.path)+' : '+error.message);}
   }
   if(version!==loadVersion)return;
@@ -191,4 +193,17 @@ $('openOnline').onclick=loadOnline;
 if(['http:','https:'].includes(location.protocol)){
  $('openOnline').hidden=false;
  loadOnline();
+}
+
+function setWplaceDownload(item){
+ const link=$('downloadWplace');
+ if(detailWplaceUrl){URL.revokeObjectURL(detailWplaceUrl);detailWplaceUrl=null;}
+ if(item.online){link.href=item.url;}
+ else {detailWplaceUrl=URL.createObjectURL(item.file);link.href=detailWplaceUrl;}
+ link.download=item.file.name;
+}
+function downloadWplace(item){
+ const href=item.online?item.url:URL.createObjectURL(item.file);
+ const link=el('a');link.href=href;link.download=item.file.name;link.hidden=true;document.body.append(link);link.click();link.remove();
+ if(!item.online)setTimeout(()=>URL.revokeObjectURL(href),1000);
 }
