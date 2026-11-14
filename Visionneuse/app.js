@@ -80,7 +80,7 @@ function renderGrid(){
  $('folderTitle').textContent=folder||'Tous les overlays';$('count').textContent=shown.length+' image(s) · '+items.length+' fichier(s) chargé(s)';
  const grid=$('grid');grid.replaceChildren();
  for(const item of shown){const card=el('article',undefined,'card');card.title=item.name+'\n'+item.path;card.tabIndex=0;card.setAttribute('role','button');const thumb=el('div',undefined,'thumb'),im=el('img');im.src=item.src;im.alt=item.name;im.loading='lazy';im.onerror=()=>{thumb.replaceChildren(el('span','Image illisible'));};thumb.append(im);
-  const caption=el('div',undefined,'caption');const subdir=relativeDir(item,base);const title=el('strong',(subdir?'▣ '+subdir+' / ':'')+item.file.name);title.title=item.file.name;const location=el('small',subdir?'Sous-dossier : '+subdir:'Dossier courant');location.title=item.path;caption.append(title,location);const actions=el('div',undefined,'card-actions');const open=el('button','Visionner');open.type='button';open.onclick=()=>openImage(item);const save=el('button',undefined,'download-icon');save.type='button';save.title='Télécharger le fichier Wplace';save.setAttribute('aria-label','Télécharger le fichier Wplace : '+item.file.name);save.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"/></svg>';save.onclick=()=>downloadWplace(item);actions.append(open,save);card.append(thumb,caption,actions);
+  const caption=el('div',undefined,'caption');const subdir=relativeDir(item,base);const title=el('strong',(subdir?'▣ '+subdir+' / ':'')+item.file.name);title.title=item.file.name;const location=el('small',subdir?'Sous-dossier : '+subdir:'Dossier courant');location.title=item.path;caption.append(title,location);const actions=el('div',undefined,'card-actions');const open=el('button','Visionner');open.type='button';open.onclick=()=>openImage(item);const save=el('button',undefined,'download-icon');save.type='button';save.title='Télécharger le fichier Wplace';save.setAttribute('aria-label','Télécharger le fichier Wplace : '+item.file.name);save.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"/></svg>';save.onclick=()=>downloadWplace(item);actions.append(open,save);if(item.online){const github=el('a','GitHub');github.className='github-card-link';github.href=githubFileUrl(item.path);github.target='_blank';github.rel='noopener noreferrer';github.title='Ouvrir ce fichier dans le dépôt GitHub';github.onclick=e=>e.stopPropagation();actions.append(github);}card.append(thumb,caption,actions);
   card.onclick=e=>{if(e.target===card||e.target===thumb||e.target===im||e.target===caption||e.target===title||e.target===location)select(item);};card.ondblclick=e=>{if(!e.target.closest('button'))openImage(item);};card.onkeydown=e=>{if(e.target===card&&e.key==='Enter'){e.preventDefault();openImage(item);}else if(e.target===card&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();move(e.key==='ArrowLeft'||e.key==='ArrowUp'?-1:1);}};
   grid.append(card);
  }
@@ -196,6 +196,7 @@ if(['http:','https:'].includes(location.protocol)){
 }
 
 function setWplaceDownload(item){
+ const github=$('githubWplace');github.hidden=!item.online;if(item.online)github.href=githubFileUrl(item.path);else github.removeAttribute('href');
  const link=$('downloadWplace');
  if(detailWplaceUrl){URL.revokeObjectURL(detailWplaceUrl);detailWplaceUrl=null;}
  if(item.online){link.href=item.url;}
@@ -206,4 +207,8 @@ function downloadWplace(item){
  const href=item.online?item.url:URL.createObjectURL(item.file);
  const link=el('a');link.href=href;link.download=item.file.name;link.hidden=true;document.body.append(link);link.click();link.remove();
  if(!item.online)setTimeout(()=>URL.revokeObjectURL(href),1000);
+}
+
+function githubFileUrl(path){
+ return 'https://github.com/nicoulaa/SI/blob/main/'+path.split('/').map(encodeURIComponent).join('/');
 }

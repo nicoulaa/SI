@@ -61,3 +61,5 @@ Copiez `scripts/sync-si.sh` dans le dossier parent `wplace/`, puis lancez `bash 
 Le script récupère le dépôt distant, enregistre les ajouts, modifications **et suppressions** dans `Overlays/`, `Visionneuse/`, `scripts/`, le workflow Pages et `.gitignore`, puis réapplique les commits locaux sur `origin/main` et envoie le résultat. Il refuse de travailler sur une autre branche, pendant une opération Git en cours ou en présence de modifications suivies hors de ce périmètre. En cas de conflit, il s’arrête sans forcer l’envoi. L’authentification utilise votre configuration Git habituelle ; aucun token n’est écrit dans le script.
 
 Chaque vignette et la vue détaillée proposent une icône de téléchargement pour le fichier `.wplace`. En mode en ligne, le navigateur télécharge le fichier original depuis `Overlays/`; en mode local, il télécharge le fichier sélectionné depuis l’ordinateur. Les fichiers restent au format `.wplace`.
+
+En mode en ligne, les vignettes et le détail proposent également **GitHub**, un lien vers la page du fichier `.wplace` dans `Overlays/` sur la branche `main`. Ce lien n’apparaît pas en mode local.
